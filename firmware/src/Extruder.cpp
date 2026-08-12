@@ -14,12 +14,12 @@ static uint16_t freqToOcr1a(uint16_t stepFreqHz) {
     return (uint16_t)ocr;
 }
 
-static uint16_t levelToFreqHz(uint8_t level) {
+float Extruder::levelToFeedrateMmS(uint8_t level) {
     if (level < SPEED_LEVEL_MIN) level = SPEED_LEVEL_MIN;
     if (level > SPEED_LEVEL_MAX) level = SPEED_LEVEL_MAX;
-    uint32_t span = STEP_FREQ_MAX_HZ - STEP_FREQ_MIN_HZ;
-    uint32_t steps = SPEED_LEVEL_MAX - SPEED_LEVEL_MIN;
-    return STEP_FREQ_MIN_HZ + (uint32_t)(level - SPEED_LEVEL_MIN) * span / steps;
+    float span = EXTRUDER_FEEDRATE_MAX_MM_S - EXTRUDER_FEEDRATE_MIN_MM_S;
+    float steps = SPEED_LEVEL_MAX - SPEED_LEVEL_MIN;
+    return EXTRUDER_FEEDRATE_MIN_MM_S + (level - SPEED_LEVEL_MIN) * span / steps;
 }
 
 void Extruder::begin() {
@@ -34,42 +34,84 @@ void Extruder::begin() {
     TCCR1A = 0;
     TCCR1B = 0;
     TCNT1 = 0;
-    OCR1A = freqToOcr1a(levelToFreqHz(SPEED_LEVEL_DEFAULT));
     TCCR1B |= (1 << WGM12) | (1 << CS11); // CTC mode, prescaler /8
-    TIMSK1 &= ~(1 << OCIE1A);             // interrupt stays off until enabled
+    TIMSK1 &= ~(1 << OCIE1A);             // interrupt stays off until update() ramps up
     interrupts();
 
-    setSpeedLevel(SPEED_LEVEL_DEFAULT);
+    _level = SPEED_LEVEL_DEFAULT;
+    _enabled = false;
+    _currentFreqHz = 0.0f;
+    _lastUpdateMs = millis();
+    _driverEnabledPinLow = false;
 }
 
 void Extruder::setSpeedLevel(uint8_t level) {
     if (level < SPEED_LEVEL_MIN) level = SPEED_LEVEL_MIN;
     if (level > SPEED_LEVEL_MAX) level = SPEED_LEVEL_MAX;
-    _level = level;
-
-    uint16_t ocr = freqToOcr1a(levelToFreqHz(level));
-    noInterrupts();
-    OCR1A = ocr;
-    if (TCNT1 > ocr) TCNT1 = 0;
-    interrupts();
+    _level = level; // update() picks up the new target next tick
 }
 
 void Extruder::setDirection(bool forward) {
     _forward = forward;
-    digitalWrite(E0_DIR_PIN, forward ? HIGH : LOW);
+    bool pinHigh = EXTRUDER_INVERT_DIR ? !forward : forward;
+    digitalWrite(E0_DIR_PIN, pinHigh ? HIGH : LOW);
 }
 
 void Extruder::setEnabled(bool enabled) {
     _enabled = enabled;
-    digitalWrite(E0_ENABLE_PIN, enabled ? LOW : HIGH); // active LOW
-    if (enabled) {
-        noInterrupts();
-        TCNT1 = 0;
-        TIMSK1 |= (1 << OCIE1A);
-        interrupts();
-    } else {
+    if (enabled && !_driverEnabledPinLow) {
+        digitalWrite(E0_ENABLE_PIN, LOW); // power the driver now; update() ramps up the speed
+        _driverEnabledPinLow = true;
+    }
+    // On disable: the driver stays powered (LOW) until update() ramps
+    // _currentFreqHz down to 0 - applyFreq() cuts E0_ENABLE_PIN HIGH itself
+    // at that point. De-energizing instantly mid-deceleration would drop
+    // holding torque and let the motor coast/skip; ramping down while still
+    // enabled gives a controlled stop, symmetric with the soft-start.
+}
+
+void Extruder::update() {
+    unsigned long now = millis();
+    unsigned long dtMs = now - _lastUpdateMs;
+    if (dtMs == 0) return;
+    _lastUpdateMs = now;
+    float dtSeconds = dtMs / 1000.0f;
+
+    float targetHz = _enabled ? levelToFeedrateMmS(_level) * EXTRUDER_STEPS_PER_MM : 0.0f;
+    float maxDeltaHz = EXTRUDER_ACCEL_MM_S2 * EXTRUDER_STEPS_PER_MM * dtSeconds;
+
+    if (_currentFreqHz < targetHz) {
+        _currentFreqHz = min(_currentFreqHz + maxDeltaHz, targetHz);
+    } else if (_currentFreqHz > targetHz) {
+        _currentFreqHz = max(_currentFreqHz - maxDeltaHz, targetHz);
+    }
+
+    applyFreq(_currentFreqHz);
+}
+
+float Extruder::currentFeedrateMmS() const {
+    return _currentFreqHz / EXTRUDER_STEPS_PER_MM;
+}
+
+void Extruder::applyFreq(float hz) {
+    if (hz < 1.0f) { // effectively stopped - avoid freqToOcr1a(0) divide-by-zero
         TIMSK1 &= ~(1 << OCIE1A);
         digitalWrite(E0_STEP_PIN, LOW);
+        if (!_enabled && _driverEnabledPinLow) {
+            digitalWrite(E0_ENABLE_PIN, HIGH); // active LOW - fully de-energize now
+            _driverEnabledPinLow = false;
+        }
+        return;
+    }
+
+    uint16_t ocr = freqToOcr1a((uint16_t)hz);
+    noInterrupts();
+    OCR1A = ocr;
+    if (TCNT1 > ocr) TCNT1 = 0;
+    interrupts();
+    if (!(TIMSK1 & (1 << OCIE1A))) {
+        TCNT1 = 0;
+        TIMSK1 |= (1 << OCIE1A);
     }
 }
 

@@ -4,7 +4,8 @@
 
 Heater::Heater(uint8_t heaterPin, Thermistor& thermistor)
     : _pin(heaterPin), _thermistor(thermistor),
-      _pid(PID_KP, PID_KI, PID_KD, PID_OUTPUT_MIN, PID_OUTPUT_MAX) {
+      _pid(PID_KP, PID_KI, PID_KD, PID_OUTPUT_MIN, PID_OUTPUT_MAX,
+           PID_FUNCTIONAL_RANGE_C, PID_K1) {
 }
 
 void Heater::begin() {

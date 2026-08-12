@@ -39,19 +39,53 @@
 #define PID_OUTPUT_MAX   255
 #define PID_SAMPLE_MS    250UL   // PID + heater window update period
 
+// |target - current| beyond this -> full-on/full-off bang mode instead of
+// PID math (avoids integral windup while ramping from cold; mirrors
+// Marlin's PID_FUNCTIONAL_RANGE).
+#define PID_FUNCTIONAL_RANGE_C  15.0f
+// Derivative EMA smoothing: weight retained from the previous sample
+// (Marlin PID_K1). Higher = smoother/laggier, lower = snappier/noisier.
+#define PID_K1                  0.95f
+
 // ================= Temperature setpoint =================
-#define DEFAULT_TARGET_TEMP_C 200.0f
+// No default target - the heater boots idle at 0 (room temp) and only
+// starts heating once the operator sets a target via the menu (manual edit
+// or a preheat preset). See UI::begin().
 #define TEMP_STEP_C            5.0f   // change per encoder detent
 #define TEMP_SETPOINT_MIN_C    0.0f
 
-// ================= Extruder speed =================
-// UI exposes an abstract 1-10 level (no mm/s calibration yet); this maps
-// linearly to a step-pulse frequency. Retune once steps/mm is known.
+// ================= Preheat presets =================
+// One-click Temperature-menu presets for common recycled-bottle plastics
+// (Marlin-style "Preheat PLA" buttons, collapsed to this machine's material mix).
+#define PREHEAT_PET_C   250.0f
+#define PREHEAT_HDPE_C  200.0f
+
+// ================= Extruder motion =================
+// Ported from Marlin's per-axis motion params (steps/mm, feedrate,
+// acceleration), collapsed to FlowForge's single continuous-feed E0 motor.
+//
+// EXTRUDER_STEPS_PER_MM: retune once measured - mark 100mm of filament,
+// extrude it at speed level 5, measure actual mm delivered, rescale this
+// constant accordingly. Actual microstepping is set by the RAMPS A4988
+// driver jumpers, not software - this constant must match whatever jumper
+// config is physically installed.
+#define EXTRUDER_STEPS_PER_MM      500.0f
+
+// Feedrate range is deliberately kept at the SAME step-frequency envelope
+// (200-2000Hz) the old abstract speed level already ran at - i.e.
+// 0.4-4.0mm/s at the steps/mm above. Raise these only after steps/mm is
+// calibrated and higher speeds are confirmed stable on real hardware
+// (Marlin's own E-axis default of 25mm/s would drive this ISR ~6x harder).
+#define EXTRUDER_FEEDRATE_MIN_MM_S   0.4f   // feedrate at SPEED_LEVEL_MIN
+#define EXTRUDER_FEEDRATE_MAX_MM_S   4.0f   // feedrate at SPEED_LEVEL_MAX
+#define EXTRUDER_ACCEL_MM_S2        30.0f   // soft-start/stop ramp rate
+#define EXTRUDER_INVERT_DIR        false    // mirrors Marlin's INVERT_E0_DIR
+
+// UI exposes a discrete 1-10 level, linearly mapped to the feedrate range
+// above via Extruder::levelToFeedrateMmS().
 #define SPEED_LEVEL_MIN     1
 #define SPEED_LEVEL_MAX     10
 #define SPEED_LEVEL_DEFAULT 5
-#define STEP_FREQ_MIN_HZ    200
-#define STEP_FREQ_MAX_HZ    2000
 
 // ================= Encoder =================
 #define ENCODER_PULSES_PER_DETENT 4     // typical for HW-040

@@ -5,7 +5,7 @@
 //   Thermistor  - hotend temperature sensing (src/Thermistor.*)
 //   PID         - generic PID control loop (src/PID.h)
 //   Heater      - PID + thermistor + safety watchdogs -> heater output (src/Heater.*)
-//   Extruder    - Timer1-driven stepper pulses for the E0 A4988 (src/Extruder.*)
+//   Extruder    - Timer1-driven, accel-ramped stepper pulses for the E0 A4988 (src/Extruder.*)
 //   Encoder     - polled HW-040 quadrature + button (src/Encoder.*)
 //   Buzzer      - non-blocking tone sequencer (src/Buzzer.*)
 //   Display     - SSD1306 rendering, boot logo + UI screens (src/Display.*)
@@ -49,5 +49,6 @@ void setup() {
 
 void loop() {
     hotendHeater.update();
+    extruder.update(); // advances the accel ramp every iteration
     ui.update();
 }

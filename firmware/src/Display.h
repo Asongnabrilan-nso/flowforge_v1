@@ -16,10 +16,17 @@ public:
 
 private:
     void drawHome(const UiModel& m);
-    void drawTemp(const UiModel& m);
-    void drawSpeed(const UiModel& m);
+    void drawMenuMain(const UiModel& m);
+    void drawMenuTemp(const UiModel& m);
+    void drawMenuSettings(const UiModel& m);
+    void drawEditTemp(const UiModel& m);
+    void drawEditSpeed(const UiModel& m);
     void drawFault(const UiModel& m);
-    void drawHeaderIcon(const UiModel& m);
+
+    void drawMenuList(const UiModel& m, const __FlashStringHelper* title,
+                       const char* const labels[], const char* const values[], uint8_t count);
+    void drawHeaterIcon(const UiModel& m, int16_t cx, int16_t cy);
+    void drawMotorIcon(const UiModel& m, int16_t cx, int16_t cy);
 
     Adafruit_SSD1306 _oled{OLED_WIDTH, OLED_HEIGHT, &Wire, -1};
 };
