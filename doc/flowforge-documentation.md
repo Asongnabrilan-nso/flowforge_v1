@@ -72,7 +72,7 @@ Every component below is either salvaged or printed from recycled feedstock. The
 | 8 | Thermistor, 100 kΩ NTC | Donor FDM printer | Resistance verified at ambient | 100 kΩ NTC B3950 | **[MEASURE]** |
 | 9 | Cooling fan | Donor FDM printer | Bearing checked, blades cleaned | 12 V 40 mm axial | **[MEASURE]** |
 | 10 | Filament, 1.75 mm rPET | PET drink bottles | Washed, dried, strip-cut, drawn | rPETG 1.75 mm spool | **[MEASURE]** |
-| 11 | Enclosures (74 g) | Printed on rPET | See §5 print schedule | — | 7,417 |
+| 11 | Enclosures (74 g) | Printed on rPET |  | — | 7,417 |
 
 **Salvaged part count: 9 of 11 line items.** Only fasteners, wiring and the bench supply are bought new.
 
