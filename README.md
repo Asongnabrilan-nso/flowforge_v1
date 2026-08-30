@@ -14,11 +14,6 @@ Waste plastic becomes a tool that draws in waste plastic.
 | `stl/` | Printable parts: electronics unit enclosure and pen assembly |
 | `doc/` | Project documentation and publication plan |
 
-## Documentation
-
-- **[`doc/flowforge-documentation.md`](doc/flowforge-documentation.md)** — the full project write-up: problem, circularity argument, salvage provenance, mechanical and electronics design, firmware, working with rPET, safety, build guide, results.
-- **[`doc/flowforge-documentation-plan.md`](doc/flowforge-documentation-plan.md)** — abstract and publication plan for the TME "Master of Zero Waste" entry and the parallel Hackster write-up.
-- **[`firmware/README.md`](firmware/README.md)** — developer reference: safety behaviour, wiring, menu map, calibration and PID tuning. Authoritative for anything firmware-related.
 
 ## The system
 
