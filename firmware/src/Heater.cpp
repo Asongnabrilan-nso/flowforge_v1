@@ -4,7 +4,10 @@
 
 Heater::Heater(uint8_t heaterPin, Thermistor& thermistor)
     : _pin(heaterPin), _thermistor(thermistor),
-      _pid(PID_KP, PID_KI, PID_KD, PID_OUTPUT_MIN, PID_OUTPUT_MAX,
+      // PID_OUTPUT_MAX_CAPPED, not PID_OUTPUT_MAX: derates the ceiling the
+      // bang-bang bootstrap and anti-windup clamp both use, so the heater is
+      // never driven at raw 100% duty for extended stretches (see config.h).
+      _pid(PID_KP, PID_KI, PID_KD, PID_OUTPUT_MIN, PID_OUTPUT_MAX_CAPPED,
            PID_FUNCTIONAL_RANGE_C, PID_K1) {
 }
 
@@ -62,7 +65,11 @@ void Heater::update() {
         } else {
             float dtSeconds = PID_SAMPLE_MS / 1000.0f;
             float output = _pid.compute(_target, _current, dtSeconds);
-            _pwmOutput = (uint8_t)constrain(output, PID_OUTPUT_MIN, PID_OUTPUT_MAX);
+            // Belt and braces: PID.h already clamps to PID_OUTPUT_MAX_CAPPED
+            // internally, but constrain against the same derated ceiling
+            // here too so this line can never become the one place that
+            // quietly lets full 255/100% duty back in.
+            _pwmOutput = (uint8_t)constrain(output, PID_OUTPUT_MIN, PID_OUTPUT_MAX_CAPPED);
 
             bool atTemp = fabsf(_target - _current) <= TEMP_AT_TARGET_TOL_C;
             _state = atTemp ? HeaterState::AT_TEMP : HeaterState::HEATING;

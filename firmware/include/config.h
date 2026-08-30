@@ -39,6 +39,19 @@
 #define PID_OUTPUT_MAX   255
 #define PID_SAMPLE_MS    250UL   // PID + heater window update period
 
+// Marlin-style PID_MAX derating: cap the heater's ACTUAL output ceiling
+// below the raw 0-255 PWM range so it is never driven at indefinite 100%
+// duty (continuous full-rail current). The bang-bang bootstrap (PID.h) and
+// the anti-windup clamp both key off this value, so capping it here caps
+// both the cold-start current step and every sustained high-duty stretch
+// (e.g. holding near TEMP_MAX_C, where the PID otherwise sits close to
+// saturation for a long time). Salvaged RAMPS heater MOSFETs/screw
+// terminals are the weak link here - this exists to keep them from cooking
+// under sustained near-max current, not to protect the hotend itself.
+// Lower further (e.g. 70) if your specific board still runs hot at 80%.
+#define HEATER_MAX_DUTY_PCT   80
+#define PID_OUTPUT_MAX_CAPPED ((uint8_t)((uint16_t)PID_OUTPUT_MAX * HEATER_MAX_DUTY_PCT / 100))
+
 // |target - current| beyond this -> full-on/full-off bang mode instead of
 // PID math (avoids integral windup while ramping from cold; mirrors
 // Marlin's PID_FUNCTIONAL_RANGE).
