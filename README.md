@@ -1,5 +1,8 @@
 # FlowForge
 
+[![FlowForge Demo](https://youtu.be/iGiAu_VeJ9w)](https://youtube.com)
+
+
 **An open-source 3D printing pen built entirely from waste.**
 
 A handheld filament extrusion pen assembled from parts rescued from a decommissioned FDM 3D printer — hot end, nozzle, extruder mechanism, NEMA 17 stepper, PTFE tube and the printer's own Arduino Mega + RAMPS controller — and fed with filament drawn from discarded PET bottles. Every printed structural part is designed to print on the same recycled filament the pen itself consumes.
