@@ -1,6 +1,6 @@
 # FlowForge
 
-[![FlowForge Demo](https://youtube.com)](https://youtu.be/iGiAu_VeJ9w)
+[![Demo](https://img.youtube.com/vi/iGiAu_VeJ9w/maxresdefault.jpg)](https://youtu.be/iGiAu_VeJ9w)
 
 
 **An open-source 3D printing pen built entirely from waste.**
