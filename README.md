@@ -20,6 +20,10 @@ Waste plastic becomes a tool that draws in waste plastic.
 
 ## The system
 
+<p align="center">
+  <img src="doc/images/IMG_20260815_171153.jpg" alt="VeriMboa Device" width="700">
+</p>
+
 Three units, not one object:
 
 1. **The pen** — hot end, nozzle and vented barrel in a heat-isolated handle. No electronics beyond the heater cartridge, thermistor and fan.
