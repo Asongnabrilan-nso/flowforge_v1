@@ -23,7 +23,7 @@ Waste plastic becomes a tool that draws in waste plastic.
 ## The system
 
 <p align="center">
-  <img src="doc/images/IMG_20260815_171153.jpg" alt="VeriMboa Device" width="700">
+  <img src="doc/images/IMG_20260815_171153.jpg" alt="FlowForge " width="700">
 </p>
 
 Three units, not one object:
@@ -31,6 +31,19 @@ Three units, not one object:
 1. **The pen** — hot end, nozzle and vented barrel in a heat-isolated handle. No electronics beyond the heater cartridge, thermistor and fan.
 2. **The electronics unit** — a 120 × 80 mm desktop wedge housing the Mega + RAMPS, the extruder stepper and driver, the OLED and the rotary encoder. Filament enters at the rear and leaves through a PTFE tether to the pen.
 3. **A 24 V bench supply.**
+
+## Sample products printed uinsing our filaments
+<p align="center">
+  <img src="doc/images/photo_2026-09-01_16-32-19.jpg" alt="FlowForge " width="700">
+</p>
+
+<p align="center">
+  <img src="doc/images/photo_2026-09-01_16-32-03.jpg" alt="FlowForge " width="700">
+</p>
+
+<p align="center">
+  <img src="doc/images/photo_2026-09-01_16-32-26.jpg" alt="FlowForge " width="700">
+</p>
 
 ## Firmware at a glance
 
